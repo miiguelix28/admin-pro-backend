@@ -74,59 +74,62 @@ const crearUsuario = async (req, res = response) => {
 }
 
 const actualizarUsuario = async (req, res = response) => {
-    // TODO: validar token y comprobar si es el usuario correcto
 
-    const uid = req.params.id
+    // TODO: Validar token y comprobar si es el usuario correcto
 
-    try{
+    const uid = req.params.id;
 
-        const usuarioDB = await Usuario.findById(uid);
 
-        if (!usuarioDB){
+    try {
+
+        const usuarioDB = await Usuario.findById( uid );
+
+        if ( !usuarioDB ) {
             return res.status(404).json({
                 ok: false,
-                msg: 'No existe un usuario para este id'
+                msg: 'No existe un usuario por ese id'
             });
         }
 
         // Actualizaciones
-        const { password, google, email, ...campos} = req.body;
+        const { password, google, email, ...campos } = req.body;
 
-        if ( usuarioDB !== email){
+        if ( usuarioDB.email !== email ) {
 
-            const existeEmail= await Usuario.findOne({email});
-            if(existeEmail){
+            const existeEmail = await Usuario.findOne({ email });
+            if ( existeEmail ) {
                 return res.status(400).json({
                     ok: false,
-                    msg: 'Ya existe usuario con este Email'
-                })
-            } 
+                    msg: 'Ya existe un usuario con ese email'
+                });
+            }
         }
-
-        if ( usuarioDB.google ){
+        
+        if ( !usuarioDB.google ){
             campos.email = email;
-        }else if ( usuarioDB.email !== email) {
+        } else if ( usuarioDB.email !== email ) {
             return res.status(400).json({
                 ok: false,
-                msg: 'Usuarios de google no pueden cambiar correo'
-            })
+                msg: 'Usuario de google no pueden cambiar su correo'
+            });
         }
 
-        const usuarioActualizado = await Usuario.findByIdAndUpdate( uid, campos, {new: true} );
+        const usuarioActualizado = await Usuario.findByIdAndUpdate( uid, campos, { new: true } );
 
         res.json({
             ok: true,
-            usuario: usuarioActualizado,
-            uid
-        })
+            usuario: usuarioActualizado
+        });
 
-    }catch (error) {
+        
+    } catch (error) {
         console.log(error);
         res.status(500).json({
             ok: false,
             msg: 'Error inesperado'
         })
     }
+
 }
 
 const borrarUsuario = async (req, res = response) => {
